@@ -126,6 +126,20 @@ public struct Track<Value: Interpolatable>: Keyframable {
     
     
     
+    public func getKeyframe(before frame: Int) -> Keyframe<Value>? {
+        return self.keyframeSequence.getKeyframe(before: frame)
+    }
+    
+    
+    
+    
+    public func getKeyframe(after frame: Int) -> Keyframe<Value>? {
+        return self.keyframeSequence.getKeyframe(after: frame)
+    }
+    
+    
+    
+    
     
     public mutating func insertOrReplaceKeyframe(_ keyframe: Keyframe<Value>) {
         precondition(keyframe.frame >= 0, "Frame must not be negative.")
