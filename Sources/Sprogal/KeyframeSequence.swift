@@ -9,7 +9,7 @@ struct KeyframeSequence<Value: Interpolatable> {
     
     
     
-    private(set) var keyframes: [Keyframe<Value>] = []
+    private var keyframes: [Keyframe<Value>] = []
     
     
     
