@@ -9,7 +9,7 @@ public struct Keyframe<Value> {
     
     
     
-    public let frame: Int
+    public let frame: Integer
     
     
     
@@ -21,13 +21,13 @@ public struct Keyframe<Value> {
     
     
     
-    public var easing: Easing = Easing.linear
+    public var easing: Easing
     
     
     
     
     
-    public init(frame: Int, value: Value, easing: Easing = Easing.linear) {
+    public init(frame: Integer, value: Value, easing: Easing = .linear) {
         self.frame = frame
         self.value = value
         self.easing = easing

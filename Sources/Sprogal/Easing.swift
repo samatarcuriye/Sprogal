@@ -55,4 +55,9 @@ public enum Easing {
             return 1 - 2 * remaining * remaining
         }
     }
+    
+    
+    
+    
+    
 }

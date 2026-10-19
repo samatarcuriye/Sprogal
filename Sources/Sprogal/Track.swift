@@ -86,15 +86,13 @@ public struct Track<Value: Interpolatable>: Keyframable {
     
     
     public mutating func setValue(_ newValue: Value, at frame: Int) {
+        
+        precondition(frame >= 0, "Frame must not be negative.")
+        
         guard self.isKeyframingEnabled else {
             self.value = newValue
             return
         }
-        precondition(frame >= 0, "Frame must not be negative.")
-        
-        
-        
-
         
         let easing = self.keyframeSequence.getKeyframe(at: frame)?.easing
             ?? self.keyframeSequence.getKeyframe(before: frame)?.easing
@@ -142,10 +140,10 @@ public struct Track<Value: Interpolatable>: Keyframable {
     
     
     public mutating func insertOrReplaceKeyframe(_ keyframe: Keyframe<Value>) {
+        precondition(self.isKeyframingEnabled, "Keyframing is not enabled.")
         precondition(keyframe.frame >= 0, "Frame must not be negative.")
         self.keyframeSequence.insertOrReplaceKeyframe(keyframe)
     }
-    
     
     
     
