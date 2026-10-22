@@ -3,7 +3,7 @@
 
 
 
-public struct Track<Value: Interpolatable>: Keyframable {
+public struct KeyframableProperty<Value: Interpolatable>: Keyframable {
     
     
     
