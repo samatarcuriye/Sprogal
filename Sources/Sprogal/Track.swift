@@ -18,29 +18,14 @@ public final class Track<Value: Interpolatable> {
     
     private var modifier: ((Integer, Value) -> Value?)? = nil
     
-    private var state: State
-    
-    
-    
-    
-    
-    
-    public var isKeyframed: Bool {
-        switch self.state {
-        case .keyframeSequence: return true
-        case .value: return false
-        }
-    }
+    private var keyframeSequence: KeyframeSequence
     
     
     
     
     
     public var keyframes: [Keyframe<Value>] {
-        switch self.state {
-        case .keyframeSequence(let keyframeSequence): return keyframeSequence.keyframes
-        case .value: return []
-        }
+        return self.keyframeSequence.keyframes
     }
     
     
@@ -50,15 +35,7 @@ public final class Track<Value: Interpolatable> {
     
     
     public init(_ value: Value) {
-        self.state = .value(value)
-    }
-    
-    
-    
-    
-    
-    public func setValue(_ value: Value) {
-        self.state = .value(value)
+        self.keyframeSequence = KeyframeSequence(Keyframe(frame: 0, value: value))
     }
     
     
@@ -66,28 +43,20 @@ public final class Track<Value: Interpolatable> {
     
     
     public func setKeyframe(_ keyframe: Keyframe<Value>) {
-        switch self.state {
-        case .value:
-            self.state = .keyframeSequence(KeyframeSequence(keyframe))
-        case .keyframeSequence(var keyframeSequence):
-            keyframeSequence.insertOrReplaceKeyframe(keyframe)
-            self.state = .keyframeSequence(keyframeSequence)
-        }
+        self.keyframeSequence.insertOrReplaceKeyframe(keyframe)
     }
     
     
     
     
+    
     public func removeKeyframe(at frame: Integer) {
-        guard case .keyframeSequence(var keyframeSequence) = self.state,
-              let keyframe = keyframeSequence.getKeyframe(at: frame) else { return }
-
-        if keyframeSequence.count == 1 {
-            self.state = .value(keyframe.value)
-        } else {
-            keyframeSequence.removeKeyframe(at: frame)
-            self.state = .keyframeSequence(keyframeSequence)
-        }
+        guard self.keyframeSequence.getKeyframe(at: frame) != nil else { return }
+        precondition(
+            self.keyframeSequence.count > 1,
+            "Track: can't remove the only keyframe. Replace it by setting a keyframe on its frame."
+        )
+        self.keyframeSequence.removeKeyframe(at: frame)
     }
     
     
@@ -126,55 +95,22 @@ public final class Track<Value: Interpolatable> {
     
     
     
-    public func getValue(at frame: Integer) -> Value {
-        let stateValue: Value
-        switch self.state {
-        case .value(let value):
-            stateValue = value
-
-        case .keyframeSequence(let keyframeSequence):
-            stateValue = keyframeSequence.getValue(at: frame)
-        }
-            
-        let value = self.expression?(frame) ?? stateValue
-        return self.modifier?(frame, value) ?? value
+    /// Sets the value at `frame`: adds a keyframe there, or replaces the one
+    /// already on that frame. Other keyframes are untouched.
+    ///
+    /// A shortcut for `setKeyframe(Keyframe(frame: frame, value: value, easing: easing))`.
+    public func setValue(_ value: Value, at frame: Integer = 0, easing: Easing = .linear) {
+        self.setKeyframe(Keyframe(frame: frame, value: value, easing: easing))
     }
     
     
     
     
     
-}
-
-
-
-
-
-// MARK: State
-extension Track {
-    
-    
-    
-    
-    
-    private enum State {
-        
-        
-        
-        
-        
-        case value(Value)
-        
-        
-        
-        
-        
-        case keyframeSequence(KeyframeSequence)
-        
-        
-        
-        
-        
+    public func getValue(at frame: Integer) -> Value {
+        let keyframedValue = self.keyframeSequence.getValue(at: frame)
+        let value = self.expression?(frame) ?? keyframedValue
+        return self.modifier?(frame, value) ?? value
     }
     
     
@@ -354,7 +290,11 @@ extension Track: Keyframable {
 
 
 
-    public var lastFrame: Integer? {
-        return self.keyframes.last?.frame
+    public var lastFrame: Integer {
+        return self.keyframes[self.keyframes.count - 1].frame
     }
+    
+    
+    
+    
 }
